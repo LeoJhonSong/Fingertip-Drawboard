@@ -6,4 +6,4 @@
 
 - there are some lines should be modified if you want to use it
 
-- if you run it know it will show you the porduce process
+- It will show you the porducing process when you run it.
