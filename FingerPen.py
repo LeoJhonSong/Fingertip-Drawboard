@@ -12,13 +12,19 @@ class ROIimg(object):
         self.height, self.width, _ = frame.shape
         self.ROIwidth = int(self.width / kx)
         self.ROIheight = int(self.height / ky)
-        styleTable = {'left-up': (0, 0), 'left-down': (0, self.height-self.ROIheight), 'right-up': (self.width-self.ROIwidth, 0), 'right-down': (self.width-self.ROIwidth, self.height-self.ROIheight)}
+        styleTable = {
+            'left-up': (0, 0),
+            'left-down': (0, self.height-self.ROIheight),
+            'right-up': (self.width-self.ROIwidth, 0),
+            'right-down': (self.width-self.ROIwidth, self.height-self.ROIheight)
+        }
         self.x0, self.y0 = styleTable[style]
         self.sensorSwitch = 0  # 检测开关
         self.saveSwitch = 0  # 记录开关
         self.fx = 0
         self.fy = 0
-        self.gusture = np.zeros((self.ROIheight, self.ROIwidth), np.uint8)  # 手势胶片
+        self.gusture = np.zeros(
+            (self.ROIheight, self.ROIwidth), np.uint8)  # 手势胶片
 
     def setFrame(self, frame):
         # 图像翻转（如果没有这一步，视频显示的刚好和我们左右对称）
@@ -30,9 +36,11 @@ class ROIimg(object):
 
     def setROI(self):
         # 画出有效范围框
-        cv2.rectangle(self.frame, (self.x0, self.y0), (self.x0+self.ROIwidth, self.y0+self.ROIheight), (0, 255, 0))
+        cv2.rectangle(self.frame, (self.x0, self.y0), (self.x0 +
+                                                       self.ROIwidth, self.y0+self.ROIheight), (0, 255, 0))
         # 提取ROI像素、预降噪
-        self.ROI = cv2.GaussianBlur(self.frame[self.y0:self.y0+self.ROIheight, self.x0:self.x0+self.ROIwidth], (7, 7), 0)
+        self.ROI = cv2.GaussianBlur(
+            self.frame[self.y0:self.y0+self.ROIheight, self.x0:self.x0+self.ROIwidth], (7, 7), 0)
         self.setInterestDetect()
         self.setBinary()
         if self.sensorSwitch:
@@ -47,8 +55,10 @@ class ROIimg(object):
 
     def getROI(self):
         blue, green, red = cv2.split(self.ROI)
-        ROIimage = cv2.merge([blue & self.gusture, green & self.gusture, red & self.gusture])
-        self.frame[self.y0:self.y0+self.ROIheight, self.x0:self.x0+self.ROIwidth] = cv2.addWeighted(self.frame[self.y0:self.y0+self.ROIheight, self.x0:self.x0+self.ROIwidth], 0.3, ROIimage, 0.7, 0)
+        ROIimage = cv2.merge(
+            [blue & self.gusture, green & self.gusture, red & self.gusture])
+        self.frame[self.y0:self.y0+self.ROIheight, self.x0:self.x0+self.ROIwidth] = cv2.addWeighted(
+            self.frame[self.y0:self.y0+self.ROIheight, self.x0:self.x0+self.ROIwidth], 0.3, ROIimage, 0.7, 0)
 
     # 轮廓面积计算函数
     def areaCal(self, contours):
@@ -59,15 +69,16 @@ class ROIimg(object):
 
     def checkSensorSwitch(self):
         # 轮廓检测
-        self.contours, _ = cv2.findContours(self.binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        self.contours, _ = cv2.findContours(
+            self.binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         if len(self.contours):
             if self.sensorSwitch == 1:
                 if not (self.areaCal(self.contours) > 1000):
                     self.sensorSwitch = 0
             else:
                 if self.areaCal(self.contours):
-                        self.start_time = timeit.default_timer()
-                        self.sensorSwitch = 1
+                    self.start_time = timeit.default_timer()
+                    self.sensorSwitch = 1
         else:
             self.sensorSwitch = 0
 
@@ -104,7 +115,8 @@ class ROIimg(object):
 
 class Gusture(ROIimg):
     def setLineGusture(self):
-        cv2.line(self.gusture, (self.fxlast, self.fylast), (self.fx, self.fy), 255, 3)
+        cv2.line(self.gusture, (self.fxlast, self.fylast),
+                 (self.fx, self.fy), 255, 3)
         cv2.imshow('gusture', self.gusture)
 
     def saveGusture(self):
@@ -149,7 +161,8 @@ class Binary(TopPart):
     def setBinary(self):
         gray = cv2.cvtColor(self.interestDetect, cv2.COLOR_BGR2GRAY)  # 灰度化
         blur = cv2.GaussianBlur(gray, (7, 7), 0)  # 降噪
-        _, thresh = cv2.threshold(blur, 70, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)  # 二值化
+        _, thresh = cv2.threshold(
+            blur, 70, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)  # 二值化
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
         thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
         thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
@@ -167,14 +180,16 @@ class Binary(TopPart):
                 for contour in contours:
                     areas[idx] = cv2.contourArea(contour)
                     idx = idx + 1
-                areas_s = cv2.sortIdx(areas, cv2.SORT_DESCENDING | cv2.SORT_EVERY_COLUMN)
+                areas_s = cv2.sortIdx(
+                    areas, cv2.SORT_DESCENDING | cv2.SORT_EVERY_COLUMN)
                 imgClear = np.zeros(img.shape, dtype=np.uint8)
 #                for idx in areas_s:
 #                    if areas[idx] < 800:
 #                        break
 #                     # 绘制轮廓图像，通过将thickness设置为-1可以填充整个区域，否则只绘制边缘
 #                    cv2.drawContours(imgClear, contours, idx, [255, 255, 255], -1)
-                cv2.drawContours(imgClear, contours, areas_s[0], [255, 255, 255], -1)
+                cv2.drawContours(imgClear, contours,
+                                 areas_s[0], [255, 255, 255], -1)
                 imgClear = imgClear & img
                 return imgClear
 
@@ -220,7 +235,14 @@ class SkinDetect_RGB(Binary):
                 Red = int(self.ROI[X, Y, 2])
                 Green = int(self.ROI[X, Y, 1])
                 Blue = int(self.ROI[X, Y, 0])
-                if (Red >= 60 and Green >= 40 and Blue >= 20 and Red >= Blue and (Red - Green) >= 10 and max(max(Red, Green), Blue) - min(min(Red, Green), Blue) >= 10):
+                if (
+                        Red >= 60 and
+                        Green >= 40 and
+                        Blue >= 20 and
+                        Red >= Blue and
+                        (Red - Green) >= 10 and
+                        max(max(Red, Green), Blue) - min(min(Red, Green), Blue) >= 10
+                ):
                     img2[X, Y] = self.ROI[X, Y]  # 抠图效果
                 else:
                     img2[X, Y] = 0
