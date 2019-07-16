@@ -59,7 +59,7 @@ class ROIimg(object):
 
     def checkSensorSwitch(self):
         # 轮廓检测
-        _, self.contours, _ = cv2.findContours(self.binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        self.contours, _ = cv2.findContours(self.binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         if len(self.contours):
             if self.sensorSwitch == 1:
                 if not (self.areaCal(self.contours) > 1000):
@@ -254,7 +254,7 @@ if __name__ == '__main__':
     roi_1 = SkinDetect_RGB(frame, 3, 2, 'right-up')  # kx, ky, style
 
     while(cap.isOpened()):
-        if cv2.waitKey(1) & 0xFF == ord('1'):  # 按1退出
+        if cv2.waitKey(1) & 0xFF == ord('q'):  # 按1退出
             break
         ret, frame = cap.read()
 
