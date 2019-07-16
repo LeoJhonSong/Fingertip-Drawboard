@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import timeit
-import scipy.misc
+# import scipy.misc
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 
@@ -110,7 +110,7 @@ class Gusture(ROIimg):
     def saveGusture(self):
         # size = self.gusture.shape  # 获取gusture图片大小（长，宽，通道数）
         # gusture = cv2.resize(gusture, (int(size[1]*28/200), int(size[0]*28/200)), cv2.INTER_LINEAR)
-        # scipy.misc.imsave('D:/Desktop/智能嵌入式设计/第二讲 计算机视觉/test_pics/gusture.jpg', self.gusture)
+        # scipy.misc.imsave('gusture.jpg', self.gusture)
         self.gusture = np.zeros((self.ROIheight, self.ROIwidth), np.uint8)
         self.checkSaveSwitch()
 
